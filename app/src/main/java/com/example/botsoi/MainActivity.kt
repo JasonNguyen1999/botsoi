@@ -33,6 +33,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,17 +45,19 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun startFloatingService(gameName: String) {
+    private fun startFloatingService(gameName: String, logoName: String) {
         val intent = Intent(this, FloatingService::class.java).apply {
             putExtra(FloatingService.EXTRA_GAME_NAME, gameName)
+            putExtra(FloatingService.EXTRA_LOGO_NAME, logoName)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent)
         } else {
             startService(intent)
         }
-        finish() // thu nhỏ app
+        finish()
     }
+
 
     @Composable
     fun AppContent() {
@@ -194,35 +197,59 @@ class MainActivity : ComponentActivity() {
                     )
 
                     LazyVerticalGrid(columns = GridCells.Fixed(3), modifier = Modifier.fillMaxSize()) {
-                        items(games) { game ->
+                        itemsIndexed(games) { index, game ->
+                            val logoName = "game_${index + 1}.jpg"
+                            val logoResId = resources.getIdentifier(
+                                logoName.lowercase().substringBeforeLast("."),
+                                "drawable",
+                                packageName
+                            ).takeIf { it != 0 } ?: R.drawable.bg_login
+
                             Card(
                                 modifier = Modifier
                                     .padding(8.dp)
                                     .fillMaxWidth()
-                                    .height(100.dp)
-                                    .clickable { ensureOverlayPermissionAndStart(game) },
+                                    .height(160.dp)
+                                    .clickable {
+                                        val logoName = "game_${index + 1}.jpg"
+                                        ensureOverlayPermissionAndStart(game, logoName)
+                                    },
                                 shape = RoundedCornerShape(16.dp),
                                 elevation = CardDefaults.cardElevation(8.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.9f))
+                                colors = CardDefaults.cardColors(containerColor = Color.White)
                             ) {
-                                Box(
+                                Column(
                                     modifier = Modifier.fillMaxSize(),
-                                    contentAlignment = Alignment.Center
+                                    horizontalAlignment = Alignment.CenterHorizontally
                                 ) {
+                                    Image(
+                                        painter = painterResource(id = logoResId),
+                                        contentDescription = game,
+                                        contentScale = ContentScale.Crop,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(90.dp)
+                                            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+                                    )
                                     Text(
-                                        game,
-                                        style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFF2C3E50))
+                                        text = game,
+                                        style = MaterialTheme.typography.bodyMedium.copy(color = Color(0xFF2C3E50)),
+                                        textAlign = TextAlign.Center,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(vertical = 4.dp)
                                     )
                                 }
                             }
                         }
                     }
+
                 }
             }
         }
     }
 
-    private fun ensureOverlayPermissionAndStart(gameName: String) {
+    private fun ensureOverlayPermissionAndStart(gameName: String, logoName: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
             val intent = Intent(
                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
@@ -230,7 +257,8 @@ class MainActivity : ComponentActivity() {
             )
             startActivity(intent)
         } else {
-            startFloatingService(gameName)
+            startFloatingService(gameName, logoName)
         }
     }
+
 }

@@ -69,13 +69,12 @@ class FloatingService : Service() {
         textView.text = gameName
 
         // Load logo resource an toàn
-        val logoResId = resources.getIdentifier(
-            logoName.lowercase().substringBeforeLast("."),
-            "drawable",
-            packageName
-        ).takeIf { it != 0 } ?: R.drawable.bg_login
+        val cleanLogoName = logoName.lowercase().substringBeforeLast(".")
+        val logoResId = resources.getIdentifier(cleanLogoName, "drawable", packageName)
+        val finalLogoRes = if (logoResId != 0) logoResId else R.drawable.bg_login
 
-        val logoBitmap = BitmapFactory.decodeResource(resources, logoResId)
+
+        val logoBitmap = BitmapFactory.decodeResource(resources, finalLogoRes)
         logoView.setImageBitmap(createCircleBitmap(logoBitmap, LOGO_SIZE))
 
         val gifList = listOf(R.drawable.robot, R.drawable.robot1, R.drawable.robot2, R.drawable.robot3)
