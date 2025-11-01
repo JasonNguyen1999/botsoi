@@ -27,12 +27,12 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.platform.LocalFocusManager
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,19 +44,16 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    // Hàm khởi chạy FloatingService
-    private fun startFloatingService(tableId: Int, tableName: String) {
+    private fun startFloatingService(gameName: String) {
         val intent = Intent(this, FloatingService::class.java).apply {
-            putExtra(FloatingService.EXTRA_TABLE_ID, tableId)
-            putExtra(FloatingService.EXTRA_TABLE_NAME, tableName)
+            putExtra(FloatingService.EXTRA_GAME_NAME, gameName)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent)
         } else {
             startService(intent)
         }
-        // đóng Activity để app thu nhỏ
-        finish()
+        finish() // thu nhỏ app
     }
 
     @Composable
@@ -64,22 +61,32 @@ class MainActivity : ComponentActivity() {
         var loggedIn by rememberSaveable { mutableStateOf(false) }
         var username by rememberSaveable { mutableStateOf("") }
         var password by rememberSaveable { mutableStateOf("") }
-        val tables = List(12) { index -> "Bàn ${index + 1}" }
+
+        // Danh sách 9 game
+        val games = listOf(
+            "Baccarat",
+            "Dragon Tiger",
+            "Roulette",
+            "Sicbo",
+            "FanTan",
+            "Blackjack",
+            "Andar Bahar",
+            "3 Cards",
+            "7 Up 7 Down"
+        )
+
+        val focusManager = LocalFocusManager.current
 
         if (!loggedIn) {
-            // ===== MÀN HÌNH ĐĂNG NHẬP =====
-            val focusManager = LocalFocusManager.current
-
+            // ====== MÀN HÌNH ĐĂNG NHẬP ======
             Box(modifier = Modifier.fillMaxSize()) {
-                // Ảnh nền
                 Image(
-                    painter = painterResource(id = R.drawable.bg_login), // thêm ảnh vào thư mục res/drawable/bg_login.jpg
+                    painter = painterResource(id = R.drawable.bg_login),
                     contentDescription = null,
                     contentScale = ContentScale.Crop,
                     modifier = Modifier.fillMaxSize()
                 )
 
-                // Lớp phủ mờ để chữ dễ đọc
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -93,7 +100,6 @@ class MainActivity : ComponentActivity() {
                         )
                 )
 
-                // Form đăng nhập
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -127,9 +133,7 @@ class MainActivity : ComponentActivity() {
                                 value = username,
                                 onValueChange = { username = it },
                                 label = { Text("Tài khoản") },
-                                leadingIcon = {
-                                    Icon(Icons.Default.Person, contentDescription = null)
-                                },
+                                leadingIcon = { Icon(Icons.Default.Person, contentDescription = null) },
                                 singleLine = true,
                                 shape = RoundedCornerShape(12.dp),
                                 modifier = Modifier.fillMaxWidth()
@@ -141,9 +145,7 @@ class MainActivity : ComponentActivity() {
                                 value = password,
                                 onValueChange = { password = it },
                                 label = { Text("Mật khẩu") },
-                                leadingIcon = {
-                                    Icon(Icons.Default.Lock, contentDescription = null)
-                                },
+                                leadingIcon = { Icon(Icons.Default.Lock, contentDescription = null) },
                                 singleLine = true,
                                 visualTransformation = PasswordVisualTransformation(),
                                 shape = RoundedCornerShape(12.dp),
@@ -172,9 +174,8 @@ class MainActivity : ComponentActivity() {
                 }
             }
         } else {
-            // ===== DANH SÁCH BÀN =====
+            // ===== DANH SÁCH GAME =====
             Box(modifier = Modifier.fillMaxSize()) {
-                // Nền gradient
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -187,19 +188,19 @@ class MainActivity : ComponentActivity() {
 
                 Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
                     Text(
-                        text = "Danh sách bàn",
+                        text = "Chọn Game",
                         style = MaterialTheme.typography.headlineSmall.copy(color = Color.White),
                         modifier = Modifier.padding(8.dp)
                     )
 
                     LazyVerticalGrid(columns = GridCells.Fixed(3), modifier = Modifier.fillMaxSize()) {
-                        items(tables) { t ->
+                        items(games) { game ->
                             Card(
                                 modifier = Modifier
                                     .padding(8.dp)
                                     .fillMaxWidth()
                                     .height(100.dp)
-                                    .clickable { ensureOverlayPermissionAndStart(t) },
+                                    .clickable { ensureOverlayPermissionAndStart(game) },
                                 shape = RoundedCornerShape(16.dp),
                                 elevation = CardDefaults.cardElevation(8.dp),
                                 colors = CardDefaults.cardColors(containerColor = Color.White.copy(alpha = 0.9f))
@@ -209,7 +210,7 @@ class MainActivity : ComponentActivity() {
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        t,
+                                        game,
                                         style = MaterialTheme.typography.bodyLarge.copy(color = Color(0xFF2C3E50))
                                     )
                                 }
@@ -221,7 +222,7 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun ensureOverlayPermissionAndStart(tableName: String) {
+    private fun ensureOverlayPermissionAndStart(gameName: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
             val intent = Intent(
                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
@@ -229,8 +230,7 @@ class MainActivity : ComponentActivity() {
             )
             startActivity(intent)
         } else {
-            val tableId = tableName.filter { it.isDigit() }.toIntOrNull() ?: 0
-            startFloatingService(tableId, tableName)
+            startFloatingService(gameName)
         }
     }
 }

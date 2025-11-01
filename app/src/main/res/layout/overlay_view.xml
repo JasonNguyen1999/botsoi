@@ -1,37 +1,43 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:background="@drawable/overlay_background"
-    android:orientation="vertical"
     android:padding="8dp">
 
+    <!-- GIF hiển thị nền -->
     <ImageView
         android:id="@+id/overlay_gif"
         android:layout_width="240dp"
         android:layout_height="240dp"
         android:contentDescription="@string/app_name"
+        android:scaleType="centerCrop"
         android:src="@drawable/robot" />
 
-    <!-- Nút đóng nhỏ -->
-
+    <!-- Tên game đè lên GIF -->
     <TextView
         android:id="@+id/overlay_table_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:gravity="center"
-        android:text="Table 1"
+        android:text="Tên Game"
         android:textColor="#FFFFFF"
-        android:textSize="14sp" />
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:shadowColor="#AA000000"
+        android:shadowRadius="6"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="12dp"
+        android:visibility="gone"/>
 
+    <!-- Nút đóng nhỏ -->
     <TextView
         android:id="@+id/overlay_close"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:paddingTop="4dp"
         android:text="✕"
         android:textColor="#FFCDD2"
-        android:textSize="18sp" />
-</LinearLayout>
+        android:textSize="18sp"
+        android:layout_gravity="top|end"
+        android:layout_margin="6dp" />
+
+</FrameLayout>
