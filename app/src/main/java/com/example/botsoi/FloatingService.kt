@@ -1,18 +1,15 @@
 package com.example.botsoi
 
-import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationManager
-import android.app.Service
+import android.app.*
 import android.content.Intent
-import android.graphics.PixelFormat
+import android.graphics.*
 import android.os.Build
 import android.os.IBinder
 import android.view.*
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.core.app.NotificationCompat
 import com.bumptech.glide.Glide
-import android.widget.ImageView
 
 class FloatingService : Service() {
 
@@ -20,6 +17,8 @@ class FloatingService : Service() {
         const val CHANNEL_ID = "floating_service_channel"
         const val NOTIF_ID = 101
         const val EXTRA_GAME_NAME = "extra_game_name"
+        const val EXTRA_LOGO_NAME = "extra_logo_name"
+        const val LOGO_SIZE = 40
     }
 
     private var windowManager: WindowManager? = null
@@ -35,13 +34,11 @@ class FloatingService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val gameName = intent?.getStringExtra(EXTRA_GAME_NAME) ?: "Game"
+        val logoName = intent?.getStringExtra(EXTRA_LOGO_NAME) ?: "default_logo"
 
         startForeground(NOTIF_ID, createNotification("Đang chạy: $gameName"))
 
-        if (overlayView != null) {
-            overlayView?.findViewById<TextView>(R.id.overlay_table_name)?.text = gameName
-            return START_STICKY
-        }
+        if (overlayView != null) return START_STICKY
 
         windowManager = getSystemService(WINDOW_SERVICE) as WindowManager
 
@@ -66,21 +63,39 @@ class FloatingService : Service() {
         overlayView = inflater.inflate(R.layout.overlay_view, null)
 
         val gifView = overlayView!!.findViewById<ImageView>(R.id.overlay_gif)
-        val titleView = overlayView!!.findViewById<TextView>(R.id.overlay_table_name)
-        titleView.text = gameName
+        val logoView = overlayView!!.findViewById<ImageView>(R.id.overlay_logo)
+        val textView = overlayView!!.findViewById<TextView>(R.id.overlay_table_name)
 
-        val gifList = listOf(
-            R.drawable.robot,
-            R.drawable.robot1,
-            R.drawable.robot2,
-            R.drawable.robot3,
-        )
+        textView.text = gameName
 
+        // Load logo resource an toàn
+        val logoResId = resources.getIdentifier(
+            logoName.lowercase().substringBeforeLast("."),
+            "drawable",
+            packageName
+        ).takeIf { it != 0 } ?: R.drawable.bg_login
+
+        val logoBitmap = BitmapFactory.decodeResource(resources, logoResId)
+        logoView.setImageBitmap(createCircleBitmap(logoBitmap, LOGO_SIZE))
+
+        val gifList = listOf(R.drawable.robot, R.drawable.robot1, R.drawable.robot2, R.drawable.robot3)
         var currentGif = 0
-        fun loadGif(i: Int) {
-            Glide.with(this).asGif().load(gifList[i]).into(gifView)
+
+        fun loadGif() {
+            val gifRes = gifList[currentGif]
+            Glide.with(this).asGif().load(gifRes).into(gifView)
+
+            // Hiển thị logo + text chỉ khi GIF là robot3 hoặc robot1
+            if (gifRes == R.drawable.robot2 || gifRes == R.drawable.robot3) {
+                logoView.visibility = View.VISIBLE
+                textView.visibility = View.VISIBLE
+            } else {
+                logoView.visibility = View.GONE
+                textView.visibility = View.GONE
+            }
         }
-        loadGif(currentGif)
+
+        loadGif()
 
         var lastClickTime = 0L
         val doubleClickTime = 300L
@@ -89,7 +104,7 @@ class FloatingService : Service() {
         var touchX = 0f
         var touchY = 0f
 
-        gifView.setOnTouchListener { _, e ->
+        overlayView!!.setOnTouchListener { _, e ->
             when (e.action) {
                 MotionEvent.ACTION_DOWN -> {
                     startX = layoutParams!!.x
@@ -99,7 +114,7 @@ class FloatingService : Service() {
                     val now = System.currentTimeMillis()
                     if (now - lastClickTime < doubleClickTime) {
                         currentGif = (currentGif + 1) % gifList.size
-                        loadGif(currentGif)
+                        loadGif()
                     }
                     lastClickTime = now
                     true
@@ -120,6 +135,18 @@ class FloatingService : Service() {
 
         windowManager!!.addView(overlayView, layoutParams)
         return START_STICKY
+    }
+
+    private fun createCircleBitmap(src: Bitmap, size: Int): Bitmap {
+        val scaled = Bitmap.createScaledBitmap(src, size, size, true)
+        val output = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(output)
+        val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+        val path = Path()
+        path.addOval(RectF(0f, 0f, size.toFloat(), size.toFloat()), Path.Direction.CCW)
+        canvas.clipPath(path)
+        canvas.drawBitmap(scaled, 0f, 0f, paint)
+        return output
     }
 
     override fun onDestroy() {

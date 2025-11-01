@@ -64,15 +64,15 @@ class MainActivity : ComponentActivity() {
 
         // Danh sách 9 game
         val games = listOf(
-            "Baccarat",
-            "Dragon Tiger",
-            "Roulette",
-            "Sicbo",
-            "FanTan",
-            "Blackjack",
-            "Andar Bahar",
-            "3 Cards",
-            "7 Up 7 Down"
+            "Quyết Chiến Giành Tiền Thưởng",
+            "Đường Mạc Chược 2",
+            "Neko May Mắn",
+            "Kỳ Lân Mách Nước",
+            "Wild Đạo Tặc",
+            "Kho Báu Aztec",
+            "Sư phụ Wada Tốc độ cao",
+            "Khủng Hoảng Xác Sống",
+            "Kho Báu Của Thuyền Trưởng"
         )
 
         val focusManager = LocalFocusManager.current

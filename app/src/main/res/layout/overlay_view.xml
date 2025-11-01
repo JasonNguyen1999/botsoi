@@ -1,35 +1,45 @@
-<?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:background="@drawable/overlay_background"
     android:padding="8dp">
 
-    <!-- GIF hiển thị nền -->
+    <!-- GIF nền -->
     <ImageView
         android:id="@+id/overlay_gif"
-        android:layout_width="240dp"
-        android:layout_height="240dp"
-        android:contentDescription="@string/app_name"
+        android:layout_width="280dp"
+        android:layout_height="280dp"
         android:scaleType="centerCrop"
         android:src="@drawable/robot" />
 
-    <!-- Tên game đè lên GIF -->
+    <!-- Logo tròn chính giữa GIF -->
+    <ImageView
+        android:id="@+id/overlay_logo"
+        android:layout_width="38dp"
+        android:layout_height="38dp"
+        android:layout_gravity="center"
+        android:scaleType="centerCrop"
+        android:translationY="-45dp"
+        android:translationX="-4dp"/>
+
+    <!-- Tên game đè lên logo -->
     <TextView
         android:id="@+id/overlay_table_name"
-        android:layout_width="wrap_content"
+        android:layout_width="100dp"
         android:layout_height="wrap_content"
-        android:text="Tên Game"
-        android:textColor="#FFFFFF"
-        android:textSize="18sp"
-        android:textStyle="bold"
-        android:shadowColor="#AA000000"
-        android:shadowRadius="6"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="12dp"
-        android:visibility="gone"/>
+        android:text="Tên Game dài quá thì xuống dòng"
+        android:textColor="#000000"
+        android:textSize="10sp"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:translationY="-60dp"
+        android:translationX="50dp"
+        android:ellipsize="none"
+        android:scrollHorizontally="false"
+        android:singleLine="false"
+        android:breakStrategy="simple"/>
 
-    <!-- Nút đóng nhỏ -->
+    <!-- Nút đóng -->
     <TextView
         android:id="@+id/overlay_close"
         android:layout_width="wrap_content"
@@ -39,5 +49,4 @@
         android:textSize="18sp"
         android:layout_gravity="top|end"
         android:layout_margin="6dp" />
-
 </FrameLayout>
