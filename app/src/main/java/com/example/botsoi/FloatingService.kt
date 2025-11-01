@@ -18,6 +18,7 @@ class FloatingService : Service() {
         const val NOTIF_ID = 101
         const val EXTRA_GAME_NAME = "extra_game_name"
         const val EXTRA_LOGO_NAME = "extra_logo_name"
+
         const val LOGO_SIZE = 40
     }
 
@@ -35,6 +36,7 @@ class FloatingService : Service() {
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val gameName = intent?.getStringExtra(EXTRA_GAME_NAME) ?: "Game"
         val logoName = intent?.getStringExtra(EXTRA_LOGO_NAME) ?: "default_logo"
+        val soVong = intent?.getStringExtra("soVong") ?: ""
 
         startForeground(NOTIF_ID, createNotification("Đang chạy: $gameName"))
 
@@ -65,15 +67,15 @@ class FloatingService : Service() {
         val gifView = overlayView!!.findViewById<ImageView>(R.id.overlay_gif)
         val logoView = overlayView!!.findViewById<ImageView>(R.id.overlay_logo)
         val textView = overlayView!!.findViewById<TextView>(R.id.overlay_table_name)
+        val soVongView = overlayView!!.findViewById<TextView>(R.id.overlay_so_vong) // 🟢 thêm dòng này
 
         textView.text = gameName
+        soVongView.text = "$soVong vòng" // 🟢 hiển thị số vòng
 
-        // Load logo resource an toàn
+        // Load logo
         val cleanLogoName = logoName.lowercase().substringBeforeLast(".")
         val logoResId = resources.getIdentifier(cleanLogoName, "drawable", packageName)
         val finalLogoRes = if (logoResId != 0) logoResId else R.drawable.bg_login
-
-
         val logoBitmap = BitmapFactory.decodeResource(resources, finalLogoRes)
         logoView.setImageBitmap(createCircleBitmap(logoBitmap, LOGO_SIZE))
 
@@ -84,13 +86,22 @@ class FloatingService : Service() {
             val gifRes = gifList[currentGif]
             Glide.with(this).asGif().load(gifRes).into(gifView)
 
-            // Hiển thị logo + text chỉ khi GIF là robot3 hoặc robot1
-            if (gifRes == R.drawable.robot2 || gifRes == R.drawable.robot3) {
-                logoView.visibility = View.VISIBLE
-                textView.visibility = View.VISIBLE
-            } else {
-                logoView.visibility = View.GONE
-                textView.visibility = View.GONE
+            when (gifRes) {
+                R.drawable.robot2 -> {
+                    logoView.visibility = View.VISIBLE
+                    textView.visibility = View.VISIBLE
+                    soVongView.visibility = View.VISIBLE
+                }
+                R.drawable.robot3 -> {
+                    logoView.visibility = View.VISIBLE
+                    textView.visibility = View.GONE
+                    soVongView.visibility = View.GONE
+                }
+                else -> {
+                    logoView.visibility = View.GONE
+                    textView.visibility = View.GONE
+                    soVongView.visibility = View.GONE
+                }
             }
         }
 

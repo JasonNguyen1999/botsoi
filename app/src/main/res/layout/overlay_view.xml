@@ -25,7 +25,7 @@
     <!-- Tên game đè lên logo -->
     <TextView
         android:id="@+id/overlay_table_name"
-        android:layout_width="100dp"
+        android:layout_width="90dp"
         android:layout_height="wrap_content"
         android:text="Tên Game dài quá thì xuống dòng"
         android:textColor="#000000"
@@ -38,6 +38,23 @@
         android:scrollHorizontally="false"
         android:singleLine="false"
         android:breakStrategy="simple"/>
+
+    <TextView
+        android:id="@+id/overlay_so_vong"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Số vòng: 0"
+        android:textColor="#000000"
+        android:textSize="11sp"
+        android:gravity="center"
+        android:layout_gravity="center"
+        android:translationY="-43dp"
+        android:translationX="50dp"
+        android:ellipsize="none"
+        android:scrollHorizontally="false"
+        android:singleLine="false"
+        android:breakStrategy="simple"
+        />
 
     <!-- Nút đóng -->
     <TextView

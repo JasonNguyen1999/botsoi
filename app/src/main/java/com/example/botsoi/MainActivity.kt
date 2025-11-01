@@ -45,10 +45,11 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun startFloatingService(gameName: String, logoName: String) {
+    private fun startFloatingService(gameName: String, logoName: String, soVong: String) {
         val intent = Intent(this, FloatingService::class.java).apply {
             putExtra(FloatingService.EXTRA_GAME_NAME, gameName)
             putExtra(FloatingService.EXTRA_LOGO_NAME, logoName)
+            putExtra("soVong", soVong)
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             startForegroundService(intent)
@@ -64,6 +65,7 @@ class MainActivity : ComponentActivity() {
         var loggedIn by rememberSaveable { mutableStateOf(false) }
         var username by rememberSaveable { mutableStateOf("") }
         var password by rememberSaveable { mutableStateOf("") }
+        var soVong by rememberSaveable { mutableStateOf("") }
 
         // Danh sách 9 game
         val games = listOf(
@@ -191,12 +193,23 @@ class MainActivity : ComponentActivity() {
 
                 Column(modifier = Modifier.fillMaxSize().padding(12.dp)) {
                     Text(
-                        text = "Chọn Game",
+                        text = "Chọn Game 1",
                         style = MaterialTheme.typography.headlineSmall.copy(color = Color.White),
                         modifier = Modifier.padding(8.dp)
                     )
 
-                    LazyVerticalGrid(columns = GridCells.Fixed(3), modifier = Modifier.fillMaxSize()) {
+                    OutlinedTextField(
+                        value = soVong,
+                        onValueChange = { soVong = it },
+                        label = { Text("(VD: 5 - 7, 9 - 10)") },
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 8.dp, vertical = 8.dp)
+                    )
+
+                    LazyVerticalGrid(columns = GridCells.Fixed(3), modifier = Modifier.weight(1f).fillMaxWidth()) {
                         itemsIndexed(games) { index, game ->
                             val logoName = "game_${index + 1}.jpg"
                             val logoResId = resources.getIdentifier(
@@ -212,7 +225,7 @@ class MainActivity : ComponentActivity() {
                                     .height(160.dp)
                                     .clickable {
                                         val logoName = "game_${index + 1}.jpg"
-                                        ensureOverlayPermissionAndStart(game, logoName)
+                                        ensureOverlayPermissionAndStart(game, logoName, soVong)
                                     },
                                 shape = RoundedCornerShape(16.dp),
                                 elevation = CardDefaults.cardElevation(8.dp),
@@ -244,12 +257,23 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
+                    Text(
+                        text = "Made by Fuco",
+                        color = Color.White,
+                        fontSize = 8.sp,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp),
+                        textAlign = TextAlign.Center
+                    )
+
+
                 }
             }
         }
     }
 
-    private fun ensureOverlayPermissionAndStart(gameName: String, logoName: String) {
+    private fun ensureOverlayPermissionAndStart(gameName: String, logoName: String, soVong: String) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && !Settings.canDrawOverlays(this)) {
             val intent = Intent(
                 Settings.ACTION_MANAGE_OVERLAY_PERMISSION,
@@ -257,8 +281,9 @@ class MainActivity : ComponentActivity() {
             )
             startActivity(intent)
         } else {
-            startFloatingService(gameName, logoName)
+            startFloatingService(gameName, logoName, soVong)
         }
     }
+
 
 }
